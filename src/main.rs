@@ -1,3 +1,4 @@
+use libc;
 use std::fs;
 use std::process::{Command, Stdio};
 use std::io::Write;
@@ -22,22 +23,28 @@ fn read_power_limit(path: &str) -> i64 {
 }
 
 fn write_power_limit(path: &str, watts: f64) {
-    let microwatts = (watts * 1_000_000.0) as i64;
-    let mut cmd = Command::new("sudo")
-        .arg("tee")
-        .arg(path)
-        .stdin(Stdio::piped())
-        .stdout(Stdio::inherit())
-        .stderr(Stdio::inherit())
-        .spawn()
-        .expect("Failed to spawn sudo tee");
+    let microwatts = (watts * 1_000_000.0) as u64;
+    // Check if we're root — if so, write directly
+    let is_root = unsafe { libc::getuid() } == 0;
+    if is_root {
+        fs::write(path, format!("{}\n", microwatts)).expect("Failed to write power limit");
+    } else {
+        // Fallback to sudo for manual CLI usage
+        let mut cmd = Command::new("sudo")
+            .arg("tee")
+            .arg(path)
+            .stdin(Stdio::piped())
+            .stdout(Stdio::inherit())
+            .stderr(Stdio::inherit())
+            .spawn()
+            .expect("Failed to spawn sudo tee");
 
-    if let Some(stdin) = cmd.stdin.take() {
-        let mut stdin = stdin;
-        writeln!(stdin, "{}", microwatts).expect("Failed to write to stdin");
+        if let Some(stdin) = cmd.stdin.take() {
+            let mut stdin = stdin;
+            writeln!(stdin, "{}", microwatts).expect("Failed to write to stdin");
+        }
+        cmd.wait().expect("sudo tee failed");
     }
-
-    cmd.wait().expect("sudo tee failed");
 }
 
 fn show_status() {

@@ -4,8 +4,12 @@ version = "1.0.0"
 edition = "2021"
 
 [profile.release]
-opt-level = "z"      # optimize for size
-lto = true           # link-time optimization
-codegen-units = 1    # single codegen unit = better optimization
-panic = "abort"      # no unwinding code
-strip = "symbols"    # strip all symbols
+opt-level = "z"   # optimize for size
+lto = true        # link-time optimization
+codegen-units = 1 # single codegen unit = better optimization
+panic = "abort"   # no unwinding code
+strip = "symbols" # strip all symbols
+
+
+[dependencies]
+libc = "0.2"
