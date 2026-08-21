@@ -48,8 +48,8 @@ fn show_status() {
 
     println!();
     println!("⚙️  Intel RAPL Power Limits:");
-    println!("  🔹 PL0 (Short-term Power Limit): {:.2} W", pl0);
-    println!("  🔹 PL1 (Long-term Power Limit):  {:.2} W", pl1);
+    println!("  🔹 PL0 (Long-term Power Limit): {:.2} W", pl0);
+    println!("  🔹 PL1 (Short-term Power Limit):  {:.2} W", pl1);
 
     match Command::new("upower")
         .args(&["-i", "/org/freedesktop/UPower/devices/battery_BAT0"])
